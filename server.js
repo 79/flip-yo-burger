@@ -20,19 +20,20 @@ io.sockets.on('connection',
 
     console.log("We have a new client: " + socket.id);
 
-    // Listen for this client to disconnect
-    // Tell everyone client has disconnected
     socket.on('disconnect', function() {
       io.sockets.emit('disconnected', socket.id);
     });
 
-    // socket.on('sushi_update', function(sushiChanges) {
-    //   let payload = {
-    //     cornerX: sushiChanges.cornerX,
-    //     cornerY: sushiChanges.cornerY
-    //   }
-    //
-    //   io.sockets.emit('changes_made_to_sushi_location', payload)
-    // });
+    socket.on('update_user', function(userUpdates) {
+      let payload = {
+        id: socket.id,
+        rotationX: userUpdates.rotationX,
+        rotationY: userUpdates.rotationY,
+        rotationZ: userUpdates.rotationZ,
+        faceDown: userUpdates.faceDown
+      }
+
+      io.sockets.emit('user_updated', payload);
+    });
   }
 );
