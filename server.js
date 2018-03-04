@@ -12,8 +12,6 @@ app.use(express.static('public'));
 // Create socket connection
 let io = require('socket.io').listen(server);
 
-
-
 // Namespace input
 var inputs = io.of("/input");
 
@@ -43,7 +41,16 @@ inputs.on('connection',
 
     socket.on('username', function (usernameChanged) {
       console.log(usernameChanged);
-    })
+
+      let payload = {
+        id: socket.id,
+        username: usernameChanged,
+        lives: 3
+      }
+
+      inputs.emit('new_user', payload);
+      outputs.emit('new_user', payload);
+    });
   }
 );
 
