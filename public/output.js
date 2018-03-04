@@ -7,8 +7,8 @@ socket.on('connect', function() {
 });
 
 let users = {}; // track users
-let flipOrder[]; // track order users flipped their phones in
-let images[]; // array of URLs pointing to all images except burger
+let flipOrder = []; // track order users flipped their phones in
+let images = []; // array of URLs pointing to all images except burger
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -40,7 +40,7 @@ function createNewUser(id, user) {
     myTurn: false,
     shook: true,
     flipped: false,
-    burgerLives = 3
+    burgerLives: 3
   }
 }
 
@@ -77,7 +77,7 @@ function draw() {
   //
   // a hamburger is displayed on output screen
   // listen for socket.on('flip', ...) events from all users
-  // as each user meets the flip event criteria, "unshift" their socket.id into the flipOrder array
+  // as each user meets the flip event criteria, push their socket.id into the flipOrder array
   // as a result, whoever the last user was to flip their phone will be the last socket.id in the array
   // after x amount of seconds (3? 5?), get the last item in the flipOrder array (flipOrder[-1])
   // call loseLife(flipOrder[-1]);
@@ -85,18 +85,12 @@ function draw() {
   //
   // return to generateImage()
 
-  /* unshift() works the opposite of push() -- it adds values to the end of an array
-  array = [1, 2, 3, 4]
-  array.unshift(0)
-  array = [1, 2, 3, 4, 0] */
-
 }
 
 function generateImage() { // this function generates a random image (burger, fries, etc) on screen
    // generate random number 1-6
    // burger = 1, other images = 2-6
-  let imageChoice; 
-  imageChoice = (Math.floor(Math.random() * 6)) + 1;
+  let imageChoice = random(1,6);
 
   if (imageChoice == 1) {             // burger
     // code to display burger image
