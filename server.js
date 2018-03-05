@@ -14,6 +14,7 @@ let io = require('socket.io').listen(server);
 
 // Namespace input
 var inputs = io.of("/input");
+var debug = io.of("/debug");
 
 // Listen for individual clients to connect
 inputs.on('connection',
@@ -50,6 +51,11 @@ inputs.on('connection',
 
       inputs.emit('new_user', payload);
       outputs.emit('new_user', payload);
+      debug.emit('new_user', payload);
+    });
+
+    socket.on('shook', function(isShaken) {
+      console.log('received a shake event from', socket.id);
     });
   }
 );
