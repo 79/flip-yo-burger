@@ -11,7 +11,14 @@ let flipOrder = []; // track order users flipped their phones in
 let images = []; // array of URLs pointing to all images except burger
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(windowWidth * .73, windowHeight);
+
+  // define game images
+  const burgerIMG = loadImage("burger.png");
+  const friesIMG = loadImage("fries.jpg");
+  const milkshakeIMG = loadImage("milkshake.jpg");
+  const hotdogIMG = loadImage("hotdog.jpg");
+  const chipsIMG = loadImage("chips.jpg");
 
   // add new users
   socket.on('username', function (message) {
@@ -24,13 +31,13 @@ function setup() {
     }
   });
 
+  // add image URLs
+  images.push(burgerIMG, friesIMG, milkshakeIMG, hotdogIMG, chipsIMG);
+
   // remove disconnected users
   socket.on('disconnected', function(id){
     delete users[id];
   });
-
-  // add image URLs
-  images.push('url1', 'url2', 'url3', 'url4', 'url5');
 }
 
 // create new user
@@ -47,12 +54,17 @@ function createNewUser(id, user) {
 function draw() {
   background(255);
 
+  // [DONE] GAME AREA
   // create space in main part of screen for burger, fry, etc images
   // add countdown time under that?
+  gameArea();
 
+  // [DONE] SCOREBOARD SIDEBAR
+  // 
   // create sidebar space for username + lives scoreboard
   // loop through users{} to display the usernames, stored as users[id].username 
   // in that loop, get the value of each users[id].burgerLives and draw amount of burger images equal to that val
+  scoreboard();
 
   // GENERATE IMAGES
   //
@@ -84,22 +96,95 @@ function draw() {
   // clear flipOrder;
   //
   // return to generateImage()
+}
+
+function gameArea() { // random user, random image, countdown in canvas
+  generateUser();
+  generateImage();
+  generateCountdown();
+}
+
+function scoreboard() { // generate the scoreboard in right column div with ID 'scoreboard'
+  // scoreboard div
+  scoreboardDiv = select('#scoreboard');
+
+  // add game name & scoreboard text
+  scoreHeaderDiv = select('#scoreHeader');
+  scoreHeaderDiv.html('<h1>BURGER FLIPPER</h1><br /><h3>Scoreboard</h3>');
+
+  // dynamically generate user area
+  userDiv = select('#users');
+  userDiv.html(addUsers());
 
 }
 
-function generateImage() { // this function generates a random image (burger, fries, etc) on screen
-   // generate random number 1-6
-   // burger = 1, other images = 2-6
-  let imageChoice = random(1,6);
+function addUsers() {
+  let output;
+  let burgerImg = '<img src="/assets/burger.png" />';
 
-  if (imageChoice == 1) {             // burger
-    // code to display burger image
-    // draw the image
-    flipEvent();
+  for (let id in users) {
+    let user = users[id];
+    let lives = user.burgerLives;
+
+    // create a div for each user
+    let playerDiv = '<div class="user" id="player' + [id] + '">' 
+    
+    // add the user's username to the div
+    playerDiv += user.username + '&nbsp;&nbsp';
+
+    // loop through users lives count to add hamburger image for each life
+    for (let j = 0; j < lives; j++) {
+      playerDiv += burgerImg;
+    }
+
+    // close the div
+    playerDiv += '</div>'
+    
+    // add all of the above to the output HTML string
+    output += playerDiv;
+  }
+  
+  return(output);
+}
+
+function generateUser() { // this function randomly generates a current user
+  let numberUsers = 5; // update this to get length of users object
+  let randomUserId = random(Object.keys(users));
+  let user = users[randomUserId]; // get the user
+
+  let username = user.username;
+  user.myTurn = true;
+
+  text(username, 100, 75); // update X&Y vals to wherever we put the username text
+}
+
+function generateImage() { // this function generates a random image (burger, fries, etc) on screen
+   // random number 0 to 4, where burger = 0, other images = 1-4
+  let randomImage = random(images);
+
+  // put the image on screen
+  image(randomImage, 100, 125); // update X&Y vals to be inside defined area
+
+  if (randomImage == 0) {             // burger
+    //flipEvent();
   } else {                            // anything else
-    // code to display an image, randomly called from any array -- images[imageChoice]
-    // draw the image
-    shakeEvent();
+    //shakeEvent();
+  }
+}
+
+function generateCountdown() {  // this function generates a 3 sec countdown timer under the image
+  let seconds = second();
+  let timer = seconds + 3;
+  const timeoutText = '&#x1F525;&#x1F525;&#x1F525;' + 'YO BURGER GOT COOKED! ' + '&#x1F525;&#x1F525;&#x1F525;'
+
+  text("Countdown: ", 330, 75);
+  text(timer - seconds, 400, 75); // update X&Y vals to be inside defined area
+
+  if (frameCount % 60 == 0 && timer > 0) { // if the frameCount is divisible by 60, then a second has passed. it will stop at 0
+    timer--;
+  }
+  if (timer == 0) {
+    text(timoutText, 450, 75);
   }
 }
 
