@@ -86,3 +86,12 @@ function enterPlayMode() {
   playButton.remove();
   usernameInput.remove();
 }
+
+let lastShakeTime = 0;
+function deviceShaken() {
+  let currentTime = millis();
+  if (currentTime - lastShakeTime > 2000) {
+    socket.emit('shook', true);
+    lastShakeTime = currentTime;
+  }
+}
