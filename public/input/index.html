@@ -5,8 +5,26 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/addons/p5.dom.min.js"></script>
+  <script
+  src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+  integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E="
+  crossorigin="anonymous"></script>
 </head>
 <body>
   <script src="input.js"></script>
+
+  <form class="username-form">
+    <input type="text" id="username" maxlength="3" placeholder="AAA" />
+    <button id="start">START</button>
+  </form>
+
+  <script>
+    $(document).ready(function() {
+      // prevent the form from actually triggering
+      $(".username-form").on("submit", function(event) {
+        event.preventDefault();
+      });
+    });
+  </script>
 </body>
 </html>
