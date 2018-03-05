@@ -57,6 +57,10 @@ inputs.on('connection',
     socket.on('shook', function(isShaken) {
       console.log('received a shake event from', socket.id);
     });
+
+    socket.on('tilted', function(isTilted) {
+      console.log('received a tilt event from', socket.id);
+    });
   }
 );
 

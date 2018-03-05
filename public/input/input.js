@@ -75,6 +75,8 @@ function draw() {
 
   // test circle
   ellipse(20,20,20,20);
+
+  deviceTilted();
 }
 
 function enterPlayMode() {
@@ -90,8 +92,26 @@ function enterPlayMode() {
 let lastShakeTime = 0;
 function deviceShaken() {
   let currentTime = millis();
-  if (currentTime - lastShakeTime > 2000) {
-    socket.emit('shook', true);
-    lastShakeTime = currentTime;
+
+  if (currentTime - lastShakeTime < 2000) {
+    return;
+  }
+
+  socket.emit('shook', true);
+  lastShakeTime = currentTime;
+}
+
+let lastTiltTime = 0;
+function deviceTilted() {
+  let currentTime = millis();
+
+  if (currentTime - lastTiltTime < 2000) {
+    return;
+  }
+
+  // phone is face down
+  if (abs(rotationX) > 170) {
+    socket.emit("tilted", true);
+    lastTiltTime = currentTime;
   }
 }
