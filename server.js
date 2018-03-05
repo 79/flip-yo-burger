@@ -12,8 +12,11 @@ app.use(express.static('public'));
 // Create socket connection
 let io = require('socket.io').listen(server);
 
+// Namespace input
+var inputs = io.of("/input");
+
 // Listen for individual clients to connect
-io.sockets.on('connection',
+inputs.on('connection',
   // Callback function on connection
   // Comes back with a socket object
   function(socket) {
@@ -35,5 +38,21 @@ io.sockets.on('connection',
 
       io.sockets.emit('user_updated', payload);
     });
+
+    socket.on('username', function (usernameChanged) {
+      console.log(usernameChanged);
+
+      let payload = {
+        id: socket.id,
+        username: usernameChanged,
+        lives: 3
+      }
+
+      inputs.emit('new_user', payload);
+      outputs.emit('new_user', payload);
+    });
   }
 );
+
+// Namespace output
+var outputs = io.of("/output");
