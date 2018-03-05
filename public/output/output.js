@@ -148,7 +148,6 @@ function addUsers() {
 }
 
 function generateUser() { // this function randomly generates a current user
-  let numberUsers = 5; // update this to get length of users object
   let randomUserId = random(Object.keys(users));
   let user = users[randomUserId]; // get the user
 
@@ -166,9 +165,11 @@ function generateImage() { // this function generates a random image (burger, fr
   image(randomImage, 100, 125); // update X&Y vals to be inside defined area
 
   if (randomImage == 0) {             // burger
-    //flipEvent();
+    expectingFlip = true;
+    generateCountdown();
   } else {                            // anything else
-    //shakeEvent();
+    expectingShake = true;
+    shakeEvent();
   }
 }
 
@@ -184,7 +185,14 @@ function generateCountdown() {  // this function generates a 3 sec countdown tim
     timer--;
   }
   if (timer == 0) {
-    text(timoutText, 450, 75);
+    //text(timoutText, 450, 75);
+    if(expectingShake) {
+      shakeEvent();
+      expectingShake = false;
+    } else {
+      flipEvent();
+      expectingFlip = false;
+    }
   }
 }
 
@@ -192,7 +200,6 @@ function shakeEvent() {
   socket.on('shake', function(message) {
     let id = message.id;
     let pos = message.data;
-    let vel = {x: pos.x/8, y: pos.y/8}; // this will need to be changed
     let shaking = false;
     let user = users[id];
 
