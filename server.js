@@ -61,6 +61,11 @@ inputs.on('connection',
     socket.on('tilted', function(isTilted) {
       console.log('received a tilt event from', socket.id);
     });
+
+    socket.on('removeLife', function(id) {
+      console.log('tell input to remove life from', socket.id);
+      inputs.emit('removeLife', id);
+    });
   }
 );
 
