@@ -126,10 +126,7 @@ function scoreboard() { // generate the scoreboard in right column div with ID '
     // dynamically generate user area
     userDiv = select('#users');
     userDiv.html(addUsers());
-  } else {
-    userDiv = select('#users');
   }
-
 }
 
 function addUsers() {
