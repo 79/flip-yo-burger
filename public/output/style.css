@@ -1,3 +1,29 @@
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  font-family: 'Press Start 2P', cursive;
+}
+
+.container {
+  width: 100%;
+}
+
+#gameArea {
+  float: left;
+  width: 75%;
+}
+
+#scoreboard {
+  float: right;
+  width: 25%;
+  height: 100vh;
+  padding-left: 2%;
+  background-color: black;
+  color: white;
+  font-size: .75rem;
+}
+
+.lives{
+  width: 20px;
+  height: 20px;
 }

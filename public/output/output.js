@@ -10,6 +10,10 @@ let users = {}; // track users
 let flipOrder = []; // track order users flipped their phones in
 let images = []; // array of URLs pointing to all images except burger
 
+// state vars
+let expectingShake;
+let expectingFlip;
+
 function setup() {
   createCanvas(windowWidth * .73, windowHeight);
 
@@ -21,7 +25,7 @@ function setup() {
   const chipsIMG = loadImage("chips.jpg");
 
   // add new users
-  socket.on('username', function (message) {
+  socket.on('new_user', function (message) {
     let id = message.id;
     let username = message.username;
 
@@ -47,12 +51,14 @@ function createNewUser(id, user) {
     myTurn: false,
     shook: true,
     flipped: false,
-    burgerLives: 3
+    lives: 3
   }
 }
 
 function draw() {
   background(255);
+  textFont("Press Start 2P");
+  textSize(18);
 
   // [DONE] GAME AREA
   // create space in main part of screen for burger, fry, etc images
@@ -99,9 +105,13 @@ function draw() {
 }
 
 function gameArea() { // random user, random image, countdown in canvas
-  generateUser();
-  generateImage();
-  generateCountdown();
+  if(Object.keys(users).length > 0) {
+    generateUser();
+    generateImage();
+    generateCountdown();
+  } else {
+    text("Waiting for players...", 100, 100);
+  }
 }
 
 function scoreboard() { // generate the scoreboard in right column div with ID 'scoreboard'
@@ -112,19 +122,24 @@ function scoreboard() { // generate the scoreboard in right column div with ID '
   scoreHeaderDiv = select('#scoreHeader');
   scoreHeaderDiv.html('<h1>BURGER FLIPPER</h1><br /><h3>Scoreboard</h3>');
 
-  // dynamically generate user area
-  userDiv = select('#users');
-  userDiv.html(addUsers());
+  if(Object.keys(users).length > 0) {
+    // dynamically generate user area
+    userDiv = select('#users');
+    userDiv.html(addUsers());
+  } else {
+    userDiv = select('#users');
+  }
 
 }
 
 function addUsers() {
   let output;
-  let burgerImg = '<img src="/assets/burger.png" />';
+  let burgerImg = '<img class="lives" src="burger.png" />';
 
   for (let id in users) {
+    if (users[id].username == undefined) continue; // why doesn't this work?
     let user = users[id];
-    let lives = user.burgerLives;
+    let lives = user.lives;
 
     // create a div for each user
     let playerDiv = '<div class="user" id="player' + [id] + '">' 
@@ -197,7 +212,7 @@ function generateCountdown() {  // this function generates a 3 sec countdown tim
 }
 
 function shakeEvent() {
-  socket.on('shake', function(message) {
+  socket.on('shook', function(message) {
     let id = message.id;
     let pos = message.data;
     let shaking = false;
@@ -209,10 +224,9 @@ function shakeEvent() {
 }
 
 function flipEvent() {
-  socket.on('flip', function(message) {
+  socket.on('flipped', function(message) {
     let id = message.id;
     let pos = message.data;
-    let flipped = false;
     let user = users[id];
 
     // add logic here to know when user flips their phone
@@ -221,6 +235,6 @@ function flipEvent() {
 }
 
 function loseLife(id) {
-  id.burgerLives -= 1; // remove 1 life from users total burgerLives
+  id.lives -= 1; // remove 1 life from users total burgerLives
   socket.emit('removeLife', id); // server.js will need a listener function for this
 }
