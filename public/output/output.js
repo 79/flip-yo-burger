@@ -130,7 +130,7 @@ function scoreboard() { // generate the scoreboard in right column div with ID '
 }
 
 function addUsers() {
-  let output;
+  let output = '';
   let burgerImg = '<img class="lives" src="burger.png" />';
 
   for (let id in users) {
