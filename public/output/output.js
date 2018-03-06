@@ -10,12 +10,24 @@ let users = {}; // track users
 let flipOrder = []; // track order users flipped their phones in
 let images = []; // array of URLs pointing to all images except burger
 
+// Keeping track of turns
+let turnNew = true;
+let turnUser;
+let turnImage;;
+let turnExpecting;
+let turnEndTime;
+
+let canvasWidth;
+let canvasHeight;
+
 // state vars
 let expectingShake;
 let expectingFlip;
 
 function setup() {
-  createCanvas(windowWidth * .73, windowHeight);
+  canvasWidth = windowWidth * 0.73;
+  canvasHeight = windowHeight;
+  createCanvas(canvasWidth, canvasHeight);
 
   // define game images
   const burgerIMG = loadImage("burger.png");
@@ -59,6 +71,11 @@ function draw() {
   background(255);
   textFont("Press Start 2P");
   textSize(18);
+
+  if (Object.keys(users).length == 0) {
+    text("Waiting for players...", 100, 100);
+    return;
+  }
 
   // [DONE] GAME AREA
   // create space in main part of screen for burger, fry, etc images
@@ -105,13 +122,35 @@ function draw() {
 }
 
 function gameArea() { // random user, random image, countdown in canvas
-  if(Object.keys(users).length > 0) {
-    generateUser();
-    generateImage();
-    generateCountdown();
-  } else {
-    text("Waiting for players...", 100, 100);
+  let currentTime = millis();
+
+  // If we have a new turn, update all our turn variables
+  if (turnNew) {
+    // 1. set turnImage. burger = 0, other images = 1-4
+    turnImage = random(images);
+    if (images.indexOf(turnImage) == 0) {             // burger
+      turnExpecting = 'flip';
+    } else {                            // anything else
+      turnExpecting = 'shake';
+    }
+
+    // 2. set turnUser. Random selection!
+    let randomUserId = random(Object.keys(users));
+    turnUser = users[randomUserId];
+
+    // 3. set turnEndtime so we know when turn is over.
+    turnEndTime = currentTime + 3000;
+
+    // NOTE: This is super hacky for now, but reset turnNew = true every 5 seconds
+    setTimeout(function() {
+      turnNew = true;
+    }, 5000);
   }
+  turnNew = false;
+
+  displayUser();
+  displayImage();
+  displayCountdown(turnEndTime - currentTime);
 }
 
 function scoreboard() { // generate the scoreboard in right column div with ID 'scoreboard'
@@ -159,77 +198,71 @@ function addUsers() {
   return(output);
 }
 
-function generateUser() { // this function randomly generates a current user
-  let randomUserId = random(Object.keys(users));
-  let user = users[randomUserId]; // get the user
-
-  let username = user.username;
-  user.myTurn = true;
-
-  text(username, 100, 75); // update X&Y vals to wherever we put the username text
+// put next user's username at the top!
+function displayUser() {
+  push();
+  fill('magenta');
+  textAlign(CENTER);
+  textSize(120);
+  text(turnUser.username, 0, 0, canvasWidth, 100);
+  pop();
 }
 
-function generateImage() { // this function generates a random image (burger, fries, etc) on screen
-   // random number 0 to 4, where burger = 0, other images = 1-4
-  let randomImage = random(images);
+// put the image on screen
+function displayImage() {
+  push();
+  translate(canvasWidth / 2, canvasHeight / 2);
+  image(turnImage, -200, -200, 400, 400);
+  pop();
+}
 
-  // put the image on screen
-  image(randomImage, 100, 125); // update X&Y vals to be inside defined area
+// this function generates a 3 sec countdown timer under the image
+function displayCountdown(timeLeft) {
+  const timeoutText = 'YO BURGER GOT COOKED!';
 
-  if (randomImage == 0) {             // burger
-    expectingFlip = true;
-    generateCountdown();
-  } else {                            // anything else
-    expectingShake = true;
-    shakeEvent();
+  if (timeLeft < 0) {
+    push();
+    fill('magenta');
+    textAlign(CENTER);
+    textSize(48);
+    text(timeoutText, 0, 100, canvasWidth, 100);
+    pop();
+    return;
   }
+
+  push();
+  fill('magenta');
+  textAlign(CENTER);
+  textSize(48);
+  let countdownSeconds = floor(timeLeft / 1000);
+  let countdownMillis = floor((timeLeft % 1000) / 100);
+  text("Countdown: ", 0, 100, canvasWidth, 100);
+  text(`${countdownSeconds}.${countdownMillis}`, 0, 200, canvasWidth, 200); // update X&Y vals to be inside defined area
+  pop();
 }
 
-function generateCountdown() {  // this function generates a 3 sec countdown timer under the image
-  let seconds = second();
-  let timer = seconds + 3;
-  const timeoutText = '&#x1F525;&#x1F525;&#x1F525;' + 'YO BURGER GOT COOKED! ' + '&#x1F525;&#x1F525;&#x1F525;'
+// function shakeEvent() {
+//   socket.on('shook', function(message) {
+//     let id = message.id;
+//     let pos = message.data;
+//     let shaking = false;
+//     let user = users[id];
+//
+//     // add logic here to know when user shakes their phone
+//     // ex. if(vel.x > 5 && vel.y > 5) shaking = true;
+//   });
+// }
 
-  text("Countdown: ", 330, 75);
-  text(timer - seconds, 400, 75); // update X&Y vals to be inside defined area
-
-  if (frameCount % 60 == 0 && timer > 0) { // if the frameCount is divisible by 60, then a second has passed. it will stop at 0
-    timer--;
-  }
-  if (timer == 0) {
-    //text(timoutText, 450, 75);
-    if(expectingShake) {
-      shakeEvent();
-      expectingShake = false;
-    } else {
-      flipEvent();
-      expectingFlip = false;
-    }
-  }
-}
-
-function shakeEvent() {
-  socket.on('shook', function(message) {
-    let id = message.id;
-    let pos = message.data;
-    let shaking = false;
-    let user = users[id];
-
-    // add logic here to know when user shakes their phone
-    // ex. if(vel.x > 5 && vel.y > 5) shaking = true;
-  });
-}
-
-function flipEvent() {
-  socket.on('flipped', function(message) {
-    let id = message.id;
-    let pos = message.data;
-    let user = users[id];
-
-    // add logic here to know when user flips their phone
-    // ex. if(pos.x < 5 && pos.y < 5) flipped = true;
-  });
-}
+// function flipEvent() {
+//   socket.on('flipped', function(message) {
+//     let id = message.id;
+//     let pos = message.data;
+//     let user = users[id];
+//
+//     // add logic here to know when user flips their phone
+//     // ex. if(pos.x < 5 && pos.y < 5) flipped = true;
+//   });
+// }
 
 function loseLife(id) {
   id.lives -= 1; // remove 1 life from users total burgerLives
