@@ -66,9 +66,9 @@ function draw() {
   gameArea();
 
   // [DONE] SCOREBOARD SIDEBAR
-  // 
+  //
   // create sidebar space for username + lives scoreboard
-  // loop through users{} to display the usernames, stored as users[id].username 
+  // loop through users{} to display the usernames, stored as users[id].username
   // in that loop, get the value of each users[id].burgerLives and draw amount of burger images equal to that val
   scoreboard();
 
@@ -139,8 +139,8 @@ function addUsers() {
     let lives = user.lives;
 
     // create a div for each user
-    let playerDiv = '<div class="user" id="player' + [id] + '">' 
-    
+    let playerDiv = '<div class="user" id="player-' + id + '">';
+
     // add the user's username to the div
     playerDiv += user.username + '&nbsp;&nbsp';
 
@@ -151,11 +151,11 @@ function addUsers() {
 
     // close the div
     playerDiv += '</div>'
-    
+
     // add all of the above to the output HTML string
     output += playerDiv;
   }
-  
+
   return(output);
 }
 
