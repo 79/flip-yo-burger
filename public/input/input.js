@@ -16,11 +16,9 @@ function setup() {
   // create canvas
   createCanvas(windowWidth, windowHeight);
 
-  usernameInput = createInput();
-  usernameInput.position(20, 65);
-
-  playButton = createButton('submit');
-  playButton.position(usernameInput.x + usernameInput.width, 65);
+  // bind to form elements
+  usernameInput = select("#username");
+  playButton = select("#start");
   playButton.mousePressed(enterPlayMode);
 
   socket.on("new_user", function(userAttributes) {
@@ -42,16 +40,13 @@ function createNewUser(attributes) {
 }
 
 function draw() {
-  background('cyan');
-
   if (gameState == "starting") {
-    fill('magenta');
-    rect(0, 0, 500, 500);
+    background('cyan');
   }
 
   if (gameState == "playing") {
+    background('magenta');
     fill('yellow');
-    rect(0, 0, 500, 500);
 
     // show only my user details
     let me = users[socket.id];
@@ -59,7 +54,7 @@ function draw() {
       fill('black');
       textSize(120);
       textAlign(CENTER);
-      text(me.username, 0, 0, windowWidth, 120);
+      text(me.username.toUpperCase(), 0, 0, windowWidth, 120);
 
       let centerX = windowWidth / 2;
       let centerY = windowHeight / 4;
@@ -73,9 +68,6 @@ function draw() {
     }
   }
 
-  // test circle
-  ellipse(20,20,20,20);
-
   deviceTilted();
 }
 
@@ -85,8 +77,7 @@ function enterPlayMode() {
 
   socket.emit('username', usernameInput.value());
 
-  playButton.remove();
-  usernameInput.remove();
+  select(".username-form").hide();
 }
 
 let lastShakeTime = 0;

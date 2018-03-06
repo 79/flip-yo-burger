@@ -14,7 +14,14 @@ let io = require('socket.io').listen(server);
 
 // Namespace input
 var inputs = io.of("/input");
+var outputs = io.of("/output");
 var debug = io.of("/debug");
+
+debug.on('connection',
+  function(socket) {
+    console.log("We have a new debug client");
+  }
+);
 
 // Listen for individual clients to connect
 inputs.on('connection',
@@ -56,10 +63,14 @@ inputs.on('connection',
 
     socket.on('shook', function(isShaken) {
       console.log('received a shake event from', socket.id);
+
+      debug.emit('user_tilted', { id: socket.id });
     });
 
     socket.on('tilted', function(isTilted) {
       console.log('received a tilt event from', socket.id);
+
+      debug.emit('user_shook', { id: socket.id });
     });
 
     socket.on('removeLife', function(id) {
@@ -68,6 +79,3 @@ inputs.on('connection',
     });
   }
 );
-
-// Namespace output
-var outputs = io.of("/output");
