@@ -80,7 +80,7 @@ function draw() {
     }
   }
 
-  deviceTilted();
+  deviceFlipped();
 }
 
 function enterPlayMode() {
@@ -104,17 +104,17 @@ function deviceShaken() {
   lastShakeTime = currentTime;
 }
 
-let lastTiltTime = 0;
-function deviceTilted() {
+let lastFlippedTime = 0;
+function deviceFlipped() {
   let currentTime = millis();
 
-  if (currentTime - lastTiltTime < 2000) {
+  if (currentTime - lastFlippedTime < 2000) {
     return;
   }
 
   // phone is face down
   if (abs(rotationX) > 170) {
-    socket.emit("tilted", true);
-    lastTiltTime = currentTime;
+    socket.emit("flipped", true);
+    lastFlippedTime = currentTime;
   }
 }

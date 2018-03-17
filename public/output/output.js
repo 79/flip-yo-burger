@@ -15,10 +15,13 @@ let turnNew = true;
 let turnEnd = false;
 let turnUser;
 let turnImage;
-let turnExpecting;
+let turnExpecting; // null / 'shake' / 'flip'
 let turnEndTime;
+let turnActions = [];
+let turnSuccess = null;
 
 let gameWinner;
+let gameState = "playing";
 
 let canvasWidth;
 let canvasHeight;
@@ -58,8 +61,38 @@ function setup() {
     users[user_id].lives = users[user_id].lives - 1;
   });
 
+  socket.on('user_shook', function(user) {
+    let id = user.id;
+
+    // We're going to be sloppy here and just record all turn actions
+    turnActions.push({ id: id, event: "shook" });
+
+    if (turnSuccess == null && turnUser.id == id) {
+      if (turnExpecting == 'shake') {
+        turnSuccess = true;
+      } else {
+        turnSuccess = false;
+      }
+    }
+  });
+
+  socket.on('user_flipped', function(user) {
+    let id = user.id;
+
+    // We're going to be sloppy here and just record all turn actions
+    turnActions.push({ id: id, event: "flipped" });
+
+    if (turnSuccess == null && turnUser.id == id) {
+      if (turnExpecting == 'flip') {
+        turnSuccess = true;
+      } else {
+        turnSuccess = false;
+      }
+    }
+  });
+
   // remove disconnected users
-  socket.on('disconnected', function(id){
+  socket.on('disconnected', function(id) {
     delete users[id];
   });
 }
@@ -103,11 +136,6 @@ function draw() {
     gameArea();
   }
 
-  // GENERATE IMAGES
-  //
-  // call generateImage() function to get an image
-  //
-
   // SHAKE EVENT
   //
   // call shakeEvent() when any image but a hamburger is displayed on output screen
@@ -118,8 +146,9 @@ function draw() {
   // if myTurn = false && shook = true, they shook when they weren't supposed to, call loseLife(users[id]);
   // if myTurn = true && shook = false, they were supposed to shake but they didn't, call loseLife(users[id]);
   // if myTurn = true && shook = true, they were supposed to shake and did, nothing happens
-  //
-  // return to generateImage()
+
+
+
 
 
   // FLIP EVENT
@@ -165,7 +194,9 @@ function gameArea() { // random user, random image, countdown in canvas
     turnEnd = false;
 
     // 1. Process previous turn
-    socket.emit('remove_life', turnUser.id);
+    if (!turnSuccess) {
+      socket.emit('remove_life', turnUser.id);
+    }
 
     setTimeout(function() {
       turnNew = true;
@@ -174,6 +205,8 @@ function gameArea() { // random user, random image, countdown in canvas
 
   if (turnNew) {
     turnNew = false;
+    turnSuccess = null;
+
     // 1. set turnImage. burger = 0, other images = 1-4
     turnImage = random(images);
     if (images.indexOf(turnImage) == 0) {             // burger
@@ -194,7 +227,6 @@ function gameArea() { // random user, random image, countdown in canvas
       turnEnd = true;
     }, 3000);
   }
-  turnNew = false;
 
   displayUser();
   displayImage();
@@ -249,7 +281,17 @@ function addUsers() {
 // put next user's username at the top!
 function displayUser() {
   push();
-  fill('magenta');
+
+  switch (turnSuccess) {
+    case true:
+      fill('green');
+      break;
+    case false:
+      fill('red');
+      break;
+    default:
+      fill('magenta');
+  }
   textAlign(CENTER);
   textSize(120);
   text(turnUser.username, 0, canvasHeight - 200, canvasWidth + 50, 200);

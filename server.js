@@ -64,13 +64,13 @@ inputs.on('connection',
     socket.on('shook', function(isShaken) {
       console.log('received a shake event from', socket.id);
 
-      debug.emit('user_tilted', { id: socket.id });
+      debug.emit('user_shook', { id: socket.id });
     });
 
-    socket.on('tilted', function(isTilted) {
-      console.log('received a tilt event from', socket.id);
+    socket.on('flipped', function(isTilted) {
+      console.log('received a flip event from', socket.id);
 
-      debug.emit('user_shook', { id: socket.id });
+      debug.emit('user_flipped', { id: socket.id });
     });
   }
 );
@@ -86,6 +86,19 @@ outputs.on('connection',
     socket.on('remove_life', function(id) {
       inputs.emit('remove_life', id);
       outputs.emit('remove_life', id);
+    });
+
+    // DEBUG
+    socket.on('shook', function(isShaken) {
+      console.log('received a shake event from', socket.id);
+
+      outputs.emit('user_shook', { id: 'foo' });
+    });
+
+    socket.on('flipped', function(isTilted) {
+      console.log('received a flip event from', socket.id);
+
+      outputs.emit('user_flipped', { id: 'foo' });
     });
   }
 );
