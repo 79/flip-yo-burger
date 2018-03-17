@@ -14,9 +14,11 @@ let images = []; // array of URLs pointing to all images except burger
 let turnNew = true;
 let turnEnd = false;
 let turnUser;
-let turnImage;;
+let turnImage;
 let turnExpecting;
 let turnEndTime;
+
+let gameWinner;
 
 let canvasWidth;
 let canvasHeight;
@@ -85,17 +87,21 @@ function draw() {
     return;
   }
 
-  // [DONE] GAME AREA
-  // create space in main part of screen for burger, fry, etc images
-  // add countdown time under that?
-  gameArea();
-
   // [DONE] SCOREBOARD SIDEBAR
   //
   // create sidebar space for username + lives scoreboard
   // loop through users{} to display the usernames, stored as users[id].username
   // in that loop, get the value of each users[id].burgerLives and draw amount of burger images equal to that val
   scoreboard();
+
+  // [DONE] GAME AREA
+  // create space in main part of screen for burger, fry, etc images
+  // add countdown time under that?
+  if (isGameOver()) {
+    displayGameOver();
+  } else {
+    gameArea();
+  }
 
   // GENERATE IMAGES
   //
@@ -127,6 +133,28 @@ function draw() {
   // clear flipOrder;
   //
   // return to generateImage()
+}
+
+function isGameOver() {
+  let aliveUsers = Object.values(users).filter(function(user) { return user.lives > 0; });
+
+  if (aliveUsers.length > 1) {
+    return false;
+  }
+
+  gameWinner = aliveUsers[0].id;
+  return true;
+}
+
+function displayGameOver() {
+  push();
+  fill('magenta');
+  textAlign(CENTER, CENTER);
+  textSize(120);
+  let winner = users[gameWinner];
+  text(winner.username, 0, canvasHeight - 400, canvasWidth, 200);
+  text("🏆", 0, 0, canvasWidth, canvasHeight);
+  pop();
 }
 
 function gameArea() { // random user, random image, countdown in canvas
@@ -238,7 +266,7 @@ function displayImage() {
 
 // this function generates a 3 sec countdown timer under the image
 function displayCountdown(timeLeft) {
-  const timeoutText = 'YO BURGER GOT COOKED!';
+  const timeoutText = '🔥YO BURGER GOT COOKED!🔥';
 
   if (timeLeft < 0) {
     push();

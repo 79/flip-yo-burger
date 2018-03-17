@@ -18,7 +18,8 @@ Rules of play:
 - 3 seconds to complete task when it's your turn
 - [x] scoreboard with lives for everyone
 - shows phones flipping for burger part of game
-- when you're out of lives you get knocked out
+- [x] when you're out of lives you get knocked out
+- [x] when only one player has lives, game is over
 
 TODOS
 -----
