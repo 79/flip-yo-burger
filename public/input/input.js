@@ -29,11 +29,18 @@ function setup() {
       createNewUser(userAttributes);
     }
   });
+
+  socket.on('remove_life', function(user_id) {
+    if (user_id != socket.id) return;
+
+    users[user_id].lives--;
+  });
 }
 
 // create new user
 function createNewUser(attributes) {
   users[attributes.id] = {
+    id: attributes.id,
     username: attributes.username,
     lives: attributes.lives
   }
@@ -64,6 +71,11 @@ function draw() {
         rectMode(CENTER);
         rect(centerX, centerY * (i + 1), 50, 50);
         pop();
+      }
+
+      if (me.lives <= 0) {
+        fill(color(0,0,0,.5));
+        rect(0,0,windowWidth, windowHeight);
       }
     }
   }

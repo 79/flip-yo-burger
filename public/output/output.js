@@ -12,6 +12,7 @@ let images = []; // array of URLs pointing to all images except burger
 
 // Keeping track of turns
 let turnNew = true;
+let turnEnd = false;
 let turnUser;
 let turnImage;;
 let turnExpecting;
@@ -50,6 +51,11 @@ function setup() {
   // add image URLs
   images.push(burgerIMG, friesIMG, milkshakeIMG, hotdogIMG, chipsIMG);
 
+  socket.on('remove_life', function(user_id) {
+    console.log('remove_life received');
+    users[user_id].lives = users[user_id].lives - 1;
+  });
+
   // remove disconnected users
   socket.on('disconnected', function(id){
     delete users[id];
@@ -59,6 +65,7 @@ function setup() {
 // create new user
 function createNewUser(id, user) {
   users[id] = {
+    id: id,
     username: user,
     myTurn: false,
     shook: true,
@@ -69,7 +76,8 @@ function createNewUser(id, user) {
 
 function draw() {
   background(255);
-  textFont("Press Start 2P");
+  // textFont("Press Start 2P"); // NOTE: This google font doesn't work properly here...
+  textFont("Courier New");
   textSize(18);
 
   if (Object.keys(users).length == 0) {
@@ -125,7 +133,19 @@ function gameArea() { // random user, random image, countdown in canvas
   let currentTime = millis();
 
   // If we have a new turn, update all our turn variables
+  if (turnEnd) {
+    turnEnd = false;
+
+    // 1. Process previous turn
+    socket.emit('remove_life', turnUser.id);
+
+    setTimeout(function() {
+      turnNew = true;
+    }, 3000);
+  }
+
   if (turnNew) {
+    turnNew = false;
     // 1. set turnImage. burger = 0, other images = 1-4
     turnImage = random(images);
     if (images.indexOf(turnImage) == 0) {             // burger
@@ -143,8 +163,8 @@ function gameArea() { // random user, random image, countdown in canvas
 
     // NOTE: This is super hacky for now, but reset turnNew = true every 5 seconds
     setTimeout(function() {
-      turnNew = true;
-    }, 5000);
+      turnEnd = true;
+    }, 3000);
   }
   turnNew = false;
 
@@ -204,7 +224,7 @@ function displayUser() {
   fill('magenta');
   textAlign(CENTER);
   textSize(120);
-  text(turnUser.username, 0, 0, canvasWidth, 100);
+  text(turnUser.username, 0, canvasHeight - 200, canvasWidth + 50, 200);
   pop();
 }
 
@@ -223,21 +243,21 @@ function displayCountdown(timeLeft) {
   if (timeLeft < 0) {
     push();
     fill('magenta');
-    textAlign(CENTER);
-    textSize(48);
-    text(timeoutText, 0, 100, canvasWidth, 100);
+    textAlign(CENTER, CENTER);
+    textSize(64);
+    text(timeoutText, 0, 0, canvasWidth + 50, 200);
     pop();
     return;
   }
 
   push();
   fill('magenta');
-  textAlign(CENTER);
-  textSize(48);
+  textAlign(CENTER, CENTER);
+  textSize(96);
   let countdownSeconds = floor(timeLeft / 1000);
   let countdownMillis = floor((timeLeft % 1000) / 100);
-  text("Countdown: ", 0, 100, canvasWidth, 100);
-  text(`${countdownSeconds}.${countdownMillis}`, 0, 200, canvasWidth, 200); // update X&Y vals to be inside defined area
+  // text("Countdown: ", 0, 100, canvasWidth, 100);
+  text(`${countdownSeconds}.${countdownMillis}`, 0, 0, canvasWidth + 50, 200); // update X&Y vals to be inside defined area
   pop();
 }
 

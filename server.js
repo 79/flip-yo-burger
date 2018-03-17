@@ -72,10 +72,20 @@ inputs.on('connection',
 
       debug.emit('user_shook', { id: socket.id });
     });
+  }
+);
 
-    socket.on('removeLife', function(id) {
-      console.log('tell input to remove life from', socket.id);
-      inputs.emit('removeLife', id);
+outputs.on('connection',
+  function(socket) {
+    console.log("We have a new output client: " + socket.id);
+
+    socket.on('disconnect', function() {
+      io.sockets.emit('disconnected', socket.id);
+    });
+
+    socket.on('remove_life', function(id) {
+      inputs.emit('remove_life', id);
+      outputs.emit('remove_life', id);
     });
   }
 );
