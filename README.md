@@ -12,7 +12,7 @@ Rules of play:
 - [x] you have 3 burgers (lives)
 
 ## /output
-- starts the game
+- [ ] starts the game
 - [x] tells whos turn it is: username
 - [x] gives a food symbol: fries / burger / etc.
 - [x] scoreboard with lives for everyone
