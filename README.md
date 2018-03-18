@@ -12,14 +12,14 @@ Rules of play:
 - [x] you have 3 burgers (lives)
 
 ## /output
-- [ ] starts the game
+- [x] starts the game
 - [x] tells whos turn it is: username
 - [x] gives a food symbol: fries / burger / etc.
 - [x] scoreboard with lives for everyone
 - [x] 3 seconds to complete task when it's your turn
-- [ ] shows phones flipping for burger part of game
 - [x] when you're out of lives you get knocked out
 - [x] when only one player has lives, game is over
+- [ ] user feedback: shows phones flipping for burger part of game
 
 TODOS
 -----
