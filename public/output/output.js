@@ -354,12 +354,22 @@ function displayImage() {
 // this function generates a 3 sec countdown timer under the image
 function displayCountdown(timeLeft) {
   if (timeLeft < 0) {
-    const timeoutText = '🔥YO BURGER GOT COOKED!🔥';
+
     push();
     fill('magenta');
     textAlign(CENTER, CENTER);
     textSize(64);
-    text(timeoutText, 0, 0, canvasWidth + 50, 200);
+
+    if (turnExpecting == 'flip') {
+      const timeoutText = '🔥YO BURGER GOT COOKED!🔥';
+      text(timeoutText, 0, 0, canvasWidth + 50, 200);
+    } else {
+      if (turnSuccess) {
+        text("🎉", 0, 0, canvasWidth + 50, 200);
+      } else {
+        text("🙈", 0, 0, canvasWidth + 50, 200);
+      }
+    }
     pop();
     return;
   }
