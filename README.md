@@ -50,3 +50,8 @@ Lastly, once github.com knows about your branch, go to github.com and submit a "
 
 Authors
 -------
+
+- Elizabeth
+- Hadar
+- Nick
+- Anthony
