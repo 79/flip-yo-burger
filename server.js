@@ -52,7 +52,7 @@ inputs.on('connection',
 
       let payload = {
         id: socket.id,
-        username: usernameChanged,
+        username: usernameChanged.toUpperCase(),
         lives: 3
       }
 
