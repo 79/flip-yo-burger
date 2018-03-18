@@ -233,12 +233,12 @@ function gameArea() { // random user, random image, countdown in canvas
     turnUser = users[randomUser.id];
 
     // 3. set turnEndtime so we know when turn is over.
-    turnEndTime = currentTime + 3000;
+    turnEndTime = currentTime + 2000;
 
     // NOTE: This is super hacky for now, but reset turnNew = true every 5 seconds
     setTimeout(function() {
       turnEnd = true;
-    }, 3000);
+    }, 2000);
   }
 
   displayUser();
