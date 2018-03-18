@@ -73,7 +73,8 @@ function setup() {
   // if myTurn = true && shook = false, they were supposed to shake but they didn't, call loseLife(users[id]);
   // if myTurn = true && shook = true, they were supposed to shake and did, nothing happens
   socket.on('user_shook', function(user) {
-    console.log(user.username, " shook");
+    if (!turnUser) return;
+
     let id = user.id;
 
     // If event is from correct user and no event sent yet...
@@ -96,7 +97,8 @@ function setup() {
   // call loseLife(flipOrder[-1]);
   // clear flipOrder;
   socket.on('user_flipped', function(user) {
-    console.log(user.username, " flipped");
+    if (!turnUser) return;
+
     let id = user.id;
 
     // We're going to be sloppy here and just record all turn actions
@@ -299,6 +301,8 @@ function addUsers() {
 
 // put next user's username at the top!
 function displayUser() {
+  if (!turnUser) return;
+
   if (turnExpecting === 'flip') {
     return;
   }
