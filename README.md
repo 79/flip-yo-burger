@@ -6,7 +6,26 @@ This is a project for collective play...
 PLAYING
 -------
 
-Rules of play:
+### Players (/input)
+
+Enter a username to join the game queue.
+
+Once game starts:
+- You all start with 3 lives.
+- When you see a food item and your username, *SHAKE* your phone!
+- When you see a hamburger, *FLIP* your phone!
+
+Lose all your lives and you are eliminated. The last player remaining wins!
+
+### Conductor (/output)
+
+Wait for at least 2 players join.
+
+Press [SPACE] to start the game.
+
+TODOS
+-----
+
 ## /input
 - [x] add your username
 - [x] you have 3 burgers (lives)
@@ -20,9 +39,6 @@ Rules of play:
 - [x] when you're out of lives you get knocked out
 - [x] when only one player has lives, game is over
 - [ ] user feedback: shows phones flipping for burger part of game
-
-TODOS
------
 
 Contributing
 ------------
