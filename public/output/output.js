@@ -21,14 +21,16 @@ let turnActions = [];
 let turnSuccess = null;
 
 let gameWinner;
-let gameState = "playing";
+let gameState = "waiting";
 
 let canvasWidth;
 let canvasHeight;
 
-// state vars
-let expectingShake;
-let expectingFlip;
+// DEBUG
+// createNewUser("foo", "FOO");
+// createNewUser("bar", "BAR");
+// createNewUser("qux", "QUX");
+// createNewUser("wtf", "WTF");
 
 function setup() {
   canvasWidth = windowWidth * 0.73;
@@ -67,6 +69,7 @@ function setup() {
     // We're going to be sloppy here and just record all turn actions
     turnActions.push({ id: id, event: "shook" });
 
+    // If event is from correct user and no event sent yet...
     if (turnSuccess == null && turnUser.id == id) {
       if (turnExpecting == 'shake') {
         turnSuccess = true;
@@ -82,6 +85,7 @@ function setup() {
     // We're going to be sloppy here and just record all turn actions
     turnActions.push({ id: id, event: "flipped" });
 
+    // If event is from correct user and no event sent yet...
     if (turnSuccess == null && turnUser.id == id) {
       if (turnExpecting == 'flip') {
         turnSuccess = true;
@@ -111,14 +115,7 @@ function createNewUser(id, user) {
 
 function draw() {
   background(255);
-  // textFont("Press Start 2P"); // NOTE: This google font doesn't work properly here...
-  textFont("Courier New");
-  textSize(18);
-
-  if (Object.keys(users).length == 0) {
-    text("Waiting for players...", 100, 100);
-    return;
-  }
+  textFont("Consolas");
 
   // [DONE] SCOREBOARD SIDEBAR
   //
@@ -126,6 +123,21 @@ function draw() {
   // loop through users{} to display the usernames, stored as users[id].username
   // in that loop, get the value of each users[id].burgerLives and draw amount of burger images equal to that val
   scoreboard();
+
+  // [DONE] WAIT FOR PLAYERS
+  if (Object.keys(users).length < 2) {
+    titleText("Waiting for players... ");
+    return;
+
+  }
+
+  // [DONE] START GAME
+  if (gameState == "waiting") {
+    if (second() % 2 == 0) return;
+
+    titleText("PRESS [SPACE] TO START");
+    return;
+  }
 
   // [DONE] GAME AREA
   // create space in main part of screen for burger, fry, etc images
@@ -162,6 +174,17 @@ function draw() {
   // clear flipOrder;
   //
   // return to generateImage()
+}
+
+// Helper to display something in the middle...
+function titleText(title) {
+  push();
+  fill('black');
+  textAlign(CENTER, CENTER);
+  let fontSize = canvasWidth / title.length;
+  textSize(floor(fontSize));
+  text(title, 0, 0, canvasWidth, canvasHeight);
+  pop();
 }
 
 function isGameOver() {
@@ -327,35 +350,22 @@ function displayCountdown(timeLeft) {
   textSize(96);
   let countdownSeconds = floor(timeLeft / 1000);
   let countdownMillis = floor((timeLeft % 1000) / 100);
-  // text("Countdown: ", 0, 100, canvasWidth, 100);
   text(`${countdownSeconds}.${countdownMillis}`, 0, 0, canvasWidth + 50, 200); // update X&Y vals to be inside defined area
   pop();
 }
 
-// function shakeEvent() {
-//   socket.on('shook', function(message) {
-//     let id = message.id;
-//     let pos = message.data;
-//     let shaking = false;
-//     let user = users[id];
-//
-//     // add logic here to know when user shakes their phone
-//     // ex. if(vel.x > 5 && vel.y > 5) shaking = true;
-//   });
-// }
+function keyPressed() {
+  console.log(key)
+  if (key === ' ' && gameState == 'waiting') {
+    gameState = 'starting';
+  }
 
-// function flipEvent() {
-//   socket.on('flipped', function(message) {
-//     let id = message.id;
-//     let pos = message.data;
-//     let user = users[id];
-//
-//     // add logic here to know when user flips their phone
-//     // ex. if(pos.x < 5 && pos.y < 5) flipped = true;
-//   });
-// }
+  // DEBUG controls
+  if (key === 'F') {
+    socket.emit('flipped', 'foo');
+  }
 
-function loseLife(id) {
-  id.lives -= 1; // remove 1 life from users total burgerLives
-  socket.emit('removeLife', id); // server.js will need a listener function for this
+  if (key === 'S') {
+    socket.emit('shook', 'foo');
+  }
 }
