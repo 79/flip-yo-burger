@@ -17,7 +17,6 @@ let turnUser;
 let turnImage;
 let turnExpecting; // null / 'shake' / 'flip'
 let turnEndTime;
-let turnActions = [];
 let turnSuccess = null;
 
 let gameWinner;
@@ -63,11 +62,18 @@ function setup() {
     users[user_id].lives = users[user_id].lives - 1;
   });
 
+  // SHAKE EVENT
+  //
+  // when any image but a hamburger is displayed on output screen
+  // get current time in seconds
+  // ...wait x number of seconds (3?), listening for socket.on('shake', ...) event
+  //
+  // check each users[id].shook && users[id].myTurn
+  // if myTurn = false && shook = true, they shook when they weren't supposed to, call loseLife(users[id]);
+  // if myTurn = true && shook = false, they were supposed to shake but they didn't, call loseLife(users[id]);
+  // if myTurn = true && shook = true, they were supposed to shake and did, nothing happens
   socket.on('user_shook', function(user) {
     let id = user.id;
-
-    // We're going to be sloppy here and just record all turn actions
-    turnActions.push({ id: id, event: "shook" });
 
     // If event is from correct user and no event sent yet...
     if (turnSuccess == null && turnUser.id == id) {
@@ -79,20 +85,20 @@ function setup() {
     }
   });
 
+  // FLIP EVENT
+  //
+  // a hamburger is displayed on output screen
+  // listen for socket.on('flip', ...) events from all users
+  // as each user meets the flip event criteria, push their socket.id into the flipOrder array
+  // as a result, whoever the last user was to flip their phone will be the last socket.id in the array
+  // after x amount of seconds (3? 5?), get the last item in the flipOrder array (flipOrder[-1])
+  // call loseLife(flipOrder[-1]);
+  // clear flipOrder;
   socket.on('user_flipped', function(user) {
     let id = user.id;
 
     // We're going to be sloppy here and just record all turn actions
-    turnActions.push({ id: id, event: "flipped" });
-
-    // If event is from correct user and no event sent yet...
-    if (turnSuccess == null && turnUser.id == id) {
-      if (turnExpecting == 'flip') {
-        turnSuccess = true;
-      } else {
-        turnSuccess = false;
-      }
-    }
+    flipOrder.push(id);
   });
 
   // remove disconnected users
@@ -147,33 +153,6 @@ function draw() {
   } else {
     gameArea();
   }
-
-  // SHAKE EVENT
-  //
-  // call shakeEvent() when any image but a hamburger is displayed on output screen
-  // get current time in seconds
-  // ...wait x number of seconds (3?), listening for socket.on('shake', ...) event
-  //
-  // check each users[id].shook && users[id].myTurn
-  // if myTurn = false && shook = true, they shook when they weren't supposed to, call loseLife(users[id]);
-  // if myTurn = true && shook = false, they were supposed to shake but they didn't, call loseLife(users[id]);
-  // if myTurn = true && shook = true, they were supposed to shake and did, nothing happens
-
-
-
-
-
-  // FLIP EVENT
-  //
-  // a hamburger is displayed on output screen
-  // listen for socket.on('flip', ...) events from all users
-  // as each user meets the flip event criteria, push their socket.id into the flipOrder array
-  // as a result, whoever the last user was to flip their phone will be the last socket.id in the array
-  // after x amount of seconds (3? 5?), get the last item in the flipOrder array (flipOrder[-1])
-  // call loseLife(flipOrder[-1]);
-  // clear flipOrder;
-  //
-  // return to generateImage()
 }
 
 // Helper to display something in the middle...
@@ -217,8 +196,16 @@ function gameArea() { // random user, random image, countdown in canvas
     turnEnd = false;
 
     // 1. Process previous turn
-    if (!turnSuccess) {
+    if (turnExpecting === 'shake' && !turnSuccess) {
       socket.emit('remove_life', turnUser.id);
+    }
+
+    if (turnExpecting === 'flip') {
+      for (let key in users) {
+        if (flipOrder.indexOf(key)) {
+          socket.emit('remove_life', key);
+        }
+      }
     }
 
     setTimeout(function() {
@@ -271,9 +258,11 @@ function scoreboard() { // generate the scoreboard in right column div with ID '
   }
 }
 
+// NOTE TO SELF: This is getting re-rendered in the draw loops. Not good, right?
 function addUsers() {
   let output = '';
-  let burgerImg = '<img class="lives" src="burger.png" />';
+  let burgerImg = '<span class="lives">🍔</span>';
+  let flameImg = '<span class="lives">🔥</span>';
 
   for (let id in users) {
     if (users[id].username == undefined) continue; // why doesn't this work?
@@ -287,8 +276,12 @@ function addUsers() {
     playerDiv += user.username + '&nbsp;&nbsp';
 
     // loop through users lives count to add hamburger image for each life
-    for (let j = 0; j < lives; j++) {
-      playerDiv += burgerImg;
+    for (let j = 0; j < 3; j++) {
+      if (j < lives) {
+        playerDiv += burgerImg;
+      } else {
+        playerDiv += flameImg;
+      }
     }
 
     // close the div
@@ -303,6 +296,10 @@ function addUsers() {
 
 // put next user's username at the top!
 function displayUser() {
+  if (turnExpecting === 'flip') {
+    return;
+  }
+
   push();
 
   fill('magenta');

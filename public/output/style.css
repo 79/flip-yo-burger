@@ -2,6 +2,7 @@ html, body {
   margin: 0;
   padding: 0;
   font-family: 'Press Start 2P', cursive;
+  font-size: 16px;
 }
 
 .container {
@@ -20,10 +21,16 @@ html, body {
   padding-left: 2%;
   background-color: black;
   color: white;
-  font-size: .75rem;
+  font-size: 1rem;
+}
+
+.user {
+  margin: 10px 0;
 }
 
 .lives {
-  width: 20px;
+  display: inline-block;
+  font-size: 1.5rem;
+  width: 2rem;
   height: 20px;
 }
