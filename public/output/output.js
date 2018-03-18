@@ -282,19 +282,21 @@ function addUsers() {
 function displayUser() {
   push();
 
-  switch (turnSuccess) {
-    case true:
-      fill('green');
-      break;
-    case false:
-      fill('red');
-      break;
-    default:
-      fill('magenta');
-  }
+  fill('magenta');
   textAlign(CENTER);
   textSize(120);
+
   text(turnUser.username, 0, canvasHeight - 200, canvasWidth + 50, 200);
+
+  switch (turnSuccess) {
+    case true:
+      text("🤘", 0, canvasHeight - 350, canvasWidth + 50, 200);
+      break;
+    case false:
+      text("😭", 0, canvasHeight - 350, canvasWidth + 50, 200);
+      break;
+  }
+
   pop();
 }
 
@@ -308,9 +310,8 @@ function displayImage() {
 
 // this function generates a 3 sec countdown timer under the image
 function displayCountdown(timeLeft) {
-  const timeoutText = '🔥YO BURGER GOT COOKED!🔥';
-
   if (timeLeft < 0) {
+    const timeoutText = '🔥YO BURGER GOT COOKED!🔥';
     push();
     fill('magenta');
     textAlign(CENTER, CENTER);
