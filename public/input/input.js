@@ -7,7 +7,7 @@ socket.on('connect', function() {
 });
 
 let users = {}; // track users
-let gameState = 'starting';
+let gameState = 'waiting';
 
 let usernameInput;
 let playButton;
@@ -47,7 +47,7 @@ function createNewUser(attributes) {
 }
 
 function draw() {
-  if (gameState == "starting") {
+  if (gameState == "waiting") {
     background('cyan');
   }
 
@@ -63,13 +63,14 @@ function draw() {
       textAlign(CENTER);
       text(me.username.toUpperCase(), 0, 0, windowWidth, 120);
 
-      let centerX = windowWidth / 2;
       let centerY = windowHeight / 4;
-      for (var i = 0; i < me.lives; i++) {
+      for (var i = 0; i < 3; i++) {
+        let y = centerY * (i + 1);
+        let icon = (i < me.lives) ? "🍔" : "🔥";
+
         push();
-        fill(random(0,255));
-        rectMode(CENTER);
-        rect(centerX, centerY * (i + 1), 50, 50);
+        textAlign(CENTER, CENTER);
+        text(icon, 0, y, windowWidth, 200);
         pop();
       }
 
