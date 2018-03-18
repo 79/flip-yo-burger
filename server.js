@@ -64,13 +64,13 @@ inputs.on('connection',
     socket.on('shook', function(isShaken) {
       console.log('received a shake event from', socket.id);
 
-      debug.emit('user_shook', { id: socket.id });
+      outputs.emit('user_shook', { id: 'foo' });
     });
 
     socket.on('flipped', function(isTilted) {
       console.log('received a flip event from', socket.id);
 
-      debug.emit('user_flipped', { id: socket.id });
+      outputs.emit('user_flipped', { id: 'foo' });
     });
   }
 );
