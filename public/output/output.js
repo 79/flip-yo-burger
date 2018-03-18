@@ -12,10 +12,16 @@ let images = []; // array of URLs pointing to all images except burger
 
 // Keeping track of turns
 let turnNew = true;
+let turnEnd = false;
 let turnUser;
-let turnImage;;
-let turnExpecting;
+let turnImage;
+let turnExpecting; // null / 'shake' / 'flip'
 let turnEndTime;
+let turnActions = [];
+let turnSuccess = null;
+
+let gameWinner;
+let gameState = "playing";
 
 let canvasWidth;
 let canvasHeight;
@@ -50,8 +56,43 @@ function setup() {
   // add image URLs
   images.push(burgerIMG, friesIMG, milkshakeIMG, hotdogIMG, chipsIMG);
 
+  socket.on('remove_life', function(user_id) {
+    console.log('remove_life received');
+    users[user_id].lives = users[user_id].lives - 1;
+  });
+
+  socket.on('user_shook', function(user) {
+    let id = user.id;
+
+    // We're going to be sloppy here and just record all turn actions
+    turnActions.push({ id: id, event: "shook" });
+
+    if (turnSuccess == null && turnUser.id == id) {
+      if (turnExpecting == 'shake') {
+        turnSuccess = true;
+      } else {
+        turnSuccess = false;
+      }
+    }
+  });
+
+  socket.on('user_flipped', function(user) {
+    let id = user.id;
+
+    // We're going to be sloppy here and just record all turn actions
+    turnActions.push({ id: id, event: "flipped" });
+
+    if (turnSuccess == null && turnUser.id == id) {
+      if (turnExpecting == 'flip') {
+        turnSuccess = true;
+      } else {
+        turnSuccess = false;
+      }
+    }
+  });
+
   // remove disconnected users
-  socket.on('disconnected', function(id){
+  socket.on('disconnected', function(id) {
     delete users[id];
   });
 }
@@ -59,6 +100,7 @@ function setup() {
 // create new user
 function createNewUser(id, user) {
   users[id] = {
+    id: id,
     username: user,
     myTurn: false,
     shook: true,
@@ -69,18 +111,14 @@ function createNewUser(id, user) {
 
 function draw() {
   background(255);
-  textFont("Press Start 2P");
+  // textFont("Press Start 2P"); // NOTE: This google font doesn't work properly here...
+  textFont("Courier New");
   textSize(18);
 
   if (Object.keys(users).length == 0) {
     text("Waiting for players...", 100, 100);
     return;
   }
-
-  // [DONE] GAME AREA
-  // create space in main part of screen for burger, fry, etc images
-  // add countdown time under that?
-  gameArea();
 
   // [DONE] SCOREBOARD SIDEBAR
   //
@@ -89,10 +127,14 @@ function draw() {
   // in that loop, get the value of each users[id].burgerLives and draw amount of burger images equal to that val
   scoreboard();
 
-  // GENERATE IMAGES
-  //
-  // call generateImage() function to get an image
-  //
+  // [DONE] GAME AREA
+  // create space in main part of screen for burger, fry, etc images
+  // add countdown time under that?
+  if (isGameOver()) {
+    displayGameOver();
+  } else {
+    gameArea();
+  }
 
   // SHAKE EVENT
   //
@@ -104,8 +146,9 @@ function draw() {
   // if myTurn = false && shook = true, they shook when they weren't supposed to, call loseLife(users[id]);
   // if myTurn = true && shook = false, they were supposed to shake but they didn't, call loseLife(users[id]);
   // if myTurn = true && shook = true, they were supposed to shake and did, nothing happens
-  //
-  // return to generateImage()
+
+
+
 
 
   // FLIP EVENT
@@ -121,11 +164,49 @@ function draw() {
   // return to generateImage()
 }
 
+function isGameOver() {
+  let aliveUsers = Object.values(users).filter(function(user) { return user.lives > 0; });
+
+  if (aliveUsers.length > 1) {
+    return false;
+  }
+
+  gameWinner = aliveUsers[0].id;
+  return true;
+}
+
+function displayGameOver() {
+  push();
+  fill('magenta');
+  textAlign(CENTER, CENTER);
+  textSize(120);
+  let winner = users[gameWinner];
+  text(winner.username, 0, canvasHeight - 400, canvasWidth, 200);
+  text("🏆", 0, 0, canvasWidth, canvasHeight);
+  pop();
+}
+
 function gameArea() { // random user, random image, countdown in canvas
   let currentTime = millis();
 
   // If we have a new turn, update all our turn variables
+  if (turnEnd) {
+    turnEnd = false;
+
+    // 1. Process previous turn
+    if (!turnSuccess) {
+      socket.emit('remove_life', turnUser.id);
+    }
+
+    setTimeout(function() {
+      turnNew = true;
+    }, 3000);
+  }
+
   if (turnNew) {
+    turnNew = false;
+    turnSuccess = null;
+
     // 1. set turnImage. burger = 0, other images = 1-4
     turnImage = random(images);
     if (images.indexOf(turnImage) == 0) {             // burger
@@ -143,10 +224,9 @@ function gameArea() { // random user, random image, countdown in canvas
 
     // NOTE: This is super hacky for now, but reset turnNew = true every 5 seconds
     setTimeout(function() {
-      turnNew = true;
-    }, 5000);
+      turnEnd = true;
+    }, 3000);
   }
-  turnNew = false;
 
   displayUser();
   displayImage();
@@ -201,10 +281,20 @@ function addUsers() {
 // put next user's username at the top!
 function displayUser() {
   push();
-  fill('magenta');
+
+  switch (turnSuccess) {
+    case true:
+      fill('green');
+      break;
+    case false:
+      fill('red');
+      break;
+    default:
+      fill('magenta');
+  }
   textAlign(CENTER);
   textSize(120);
-  text(turnUser.username, 0, 0, canvasWidth, 100);
+  text(turnUser.username, 0, canvasHeight - 200, canvasWidth + 50, 200);
   pop();
 }
 
@@ -218,26 +308,26 @@ function displayImage() {
 
 // this function generates a 3 sec countdown timer under the image
 function displayCountdown(timeLeft) {
-  const timeoutText = 'YO BURGER GOT COOKED!';
+  const timeoutText = '🔥YO BURGER GOT COOKED!🔥';
 
   if (timeLeft < 0) {
     push();
     fill('magenta');
-    textAlign(CENTER);
-    textSize(48);
-    text(timeoutText, 0, 100, canvasWidth, 100);
+    textAlign(CENTER, CENTER);
+    textSize(64);
+    text(timeoutText, 0, 0, canvasWidth + 50, 200);
     pop();
     return;
   }
 
   push();
   fill('magenta');
-  textAlign(CENTER);
-  textSize(48);
+  textAlign(CENTER, CENTER);
+  textSize(96);
   let countdownSeconds = floor(timeLeft / 1000);
   let countdownMillis = floor((timeLeft % 1000) / 100);
-  text("Countdown: ", 0, 100, canvasWidth, 100);
-  text(`${countdownSeconds}.${countdownMillis}`, 0, 200, canvasWidth, 200); // update X&Y vals to be inside defined area
+  // text("Countdown: ", 0, 100, canvasWidth, 100);
+  text(`${countdownSeconds}.${countdownMillis}`, 0, 0, canvasWidth + 50, 200); // update X&Y vals to be inside defined area
   pop();
 }
 
