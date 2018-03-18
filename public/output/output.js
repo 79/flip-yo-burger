@@ -76,6 +76,10 @@ function setup() {
     if (!turnUser) return;
 
     let id = user.id;
+    console.log(id, " shook");
+
+    // We're going to be sloppy here and just record all turn actions
+    flipOrder.push(id);
 
     // If event is from correct user and no event sent yet...
     if (turnSuccess == null && turnUser.id == id) {
@@ -100,9 +104,19 @@ function setup() {
     if (!turnUser) return;
 
     let id = user.id;
+    console.log(id, " flipped");
 
     // We're going to be sloppy here and just record all turn actions
     flipOrder.push(id);
+
+    // If event is from correct user and no event sent yet...
+    if (turnSuccess == null && turnUser.id == id) {
+      if (turnExpecting == 'flip') {
+        turnSuccess = true;
+      } else {
+        turnSuccess = false;
+      }
+    }
   });
 
   // remove disconnected users
@@ -206,11 +220,13 @@ function gameArea() { // random user, random image, countdown in canvas
 
     if (turnExpecting === 'flip') {
       for (let key in users) {
-        if (flipOrder.indexOf(key)) {
+        if (flipOrder.indexOf(key) == -1) {
           socket.emit('remove_life', key);
         }
       }
     }
+
+    flipOrder = [];
 
     setTimeout(function() {
       turnNew = true;
