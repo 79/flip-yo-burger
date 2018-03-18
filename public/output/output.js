@@ -228,8 +228,9 @@ function gameArea() { // random user, random image, countdown in canvas
     }
 
     // 2. set turnUser. Random selection!
-    let randomUserId = random(Object.keys(users));
-    turnUser = users[randomUserId];
+    let aliveUsers = Object.values(users).filter(function(user) { return user.lives > 0; });
+    let randomUser = random(aliveUsers);
+    turnUser = users[randomUser.id];
 
     // 3. set turnEndtime so we know when turn is over.
     turnEndTime = currentTime + 3000;
